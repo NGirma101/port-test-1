@@ -6,27 +6,9 @@ on:
   workflow_dispatch:
 
 jobs:
-  deploy-port-jira:
+  port-jira-setup:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-
-      - name: Install K3s
-        run: |
-          curl -sfL https://get.k3s.io | INSTALL_K3S_SKIP_START=true sh -
-          sudo systemctl enable k3s
-          sudo systemctl start k3s
-          echo "Waiting for K3s to be ready..."
-          sleep 30
-          sudo kubectl get nodes
-          echo "K3s is running"
-          sudo cat /etc/rancher/k3s/k3s.yaml
-          mkdir ~/.kube
-          sudo cp /etc/rancher/k3s/k3s.yaml ~/.kube/config
-          sudo chown $(id -u):$(id -g) ~/.kube/config
-          kubectl cluster-info
-
       - name: Install Helm
         uses: azure/setup-helm@v3
 
@@ -35,16 +17,16 @@ jobs:
           helm repo add port-labs https://port-labs.github.io/helm-charts
           helm repo update
 
-      - name: Deploy Port Ocean Jira Integration
+      - name: Setup Port Jira Integration
         run: |
           helm upgrade --install jira port-labs/port-ocean \
-            --set port.clientId="E8b9n9qlbbd5js1nLLHQG7i5LVSQvXyQ" \
-            --set port.clientSecret="ON3rvb4Xtdn6pgapQmGVZPfAVX1Znfd3Xy1lbrI4k6YlzeXR4m4SBdLGyiBPhX" \
-            --set port.baseUrl="https://api.port.io" \
-            --set initializePortResources=true \
-            --set integration.identifier="jira" \
-            --set integration.type="jira" \
-            --set integration.config.jiraHost="${{ secrets.jiraHost }}" \
-            --set integration.config.jql="project = YourProjectKey" \
-            --set integration.secrets.atlassianUserEmail="${{ secrets.atlassianUserEmail }}" \
-            --set integration.secrets.atlassianUserToken="${{ secrets.atlassianUserToken }}"
+          --set port.clientId="E8b9n9qlbbd5js1nLLHQG7i5LVSQvXyQ" \
+          --set port.clientSecret="ON3rvb4Xtdn6pgapQmGVZPfAVX1Znfd3Xy1lbrI4k6YlzeXR4m4SBdLGyiBPhX" \
+          --set port.baseUrl="https://api.port.io" \
+          --set initializePortResources=true \
+          --set integration.identifier="jira" \
+          --set integration.type="jira" \
+          --set integration.eventListener.type="POLLING" \
+          --set integration.config.jiraHost="${{ secrets.JIRAHOST }}" \
+          --set integration.secrets.atlassianUserEmail="${{ secrets.ATLASSIANUSEREMAIL }}" \
+          --set integration.secrets.atlassianUserToken="${{ secrets.ATLASSIANUSERTOKEN }}"
