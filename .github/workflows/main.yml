@@ -23,8 +23,8 @@ jobs:
       - name: Deploy Port Ocean Jira Integration
         run: |
           helm upgrade --install jira port-labs/port-ocean \
-            --set port.clientId="${{ secrets.PORT_CLIENT_ID }}" \
-            --set port.clientSecret="${{ secrets.PORT_CLIENT_SECRET }}" \
+            --set port.clientId="E8b9n9qlbbd5js1nLLHQG7i5LVSQvXyQ" \
+            --set port.clientSecret="ON3rvb4Xtdn6pgapQmGVZPfAVX1Znfd3Xy1lbrI4k6YlzeXR4m4SBdLGyiBPhX" \
             --set port.baseUrl="https://api.port.io" \
             --set initializePortResources=true \
             --set integration.identifier="jira" \
