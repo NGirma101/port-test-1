@@ -12,17 +12,27 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
+      - name: Install K3s
+        run: |
+          curl -sfL https://get.k3s.io | INSTALL_K3S_SKIP_START=true sh -
+          sudo mkdir -p /etc/rancher/k3s
+          sudo touch /etc/rancher/k3s/k3s.yaml
+          sudo chmod 644 /etc/rancher/k3s/k3s.yaml
+          sudo systemctl start k3s
+          sleep 20
+          sudo k3s kubectl get node
+
       - name: Install Helm
         uses: azure/setup-helm@v3
 
       - name: Add Port Helm Repository
         run: |
-          helm repo add --force-update port-labs https://port-labs.github.io/helm-charts
+          helm repo add port-labs https://port-labs.github.io/helm-charts
           helm repo update
 
       - name: Deploy Port Ocean Jira Integration
         run: |
-          helm upgrade --install jira port-labs/port-ocean \
+          sudo helm upgrade --install jira port-labs/port-ocean \
             --set port.clientId="E8b9n9qlbbd5js1nLLHQG7i5LVSQvXyQ" \
             --set port.clientSecret="ON3rvb4Xtdn6pgapQmGVZPfAVX1Znfd3Xy1lbrI4k6YlzeXR4m4SBdLGyiBPhX" \
             --set port.baseUrl="https://api.port.io" \
