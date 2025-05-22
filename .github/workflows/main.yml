@@ -15,12 +15,17 @@ jobs:
       - name: Install K3s
         run: |
           curl -sfL https://get.k3s.io | INSTALL_K3S_SKIP_START=true sh -
-          sudo mkdir -p /etc/rancher/k3s
-          sudo touch /etc/rancher/k3s/k3s.yaml
-          sudo chmod 644 /etc/rancher/k3s/k3s.yaml
+          sudo systemctl enable k3s
           sudo systemctl start k3s
-          sleep 20
-          sudo k3s kubectl get node
+          echo "Waiting for K3s to be ready..."
+          sleep 30
+          sudo kubectl get nodes
+          echo "K3s is running"
+          sudo cat /etc/rancher/k3s/k3s.yaml
+          mkdir ~/.kube
+          sudo cp /etc/rancher/k3s/k3s.yaml ~/.kube/config
+          sudo chown $(id -u):$(id -g) ~/.kube/config
+          kubectl cluster-info
 
       - name: Install Helm
         uses: azure/setup-helm@v3
@@ -32,7 +37,7 @@ jobs:
 
       - name: Deploy Port Ocean Jira Integration
         run: |
-          sudo helm upgrade --install jira port-labs/port-ocean \
+          helm upgrade --install jira port-labs/port-ocean \
             --set port.clientId="E8b9n9qlbbd5js1nLLHQG7i5LVSQvXyQ" \
             --set port.clientSecret="ON3rvb4Xtdn6pgapQmGVZPfAVX1Znfd3Xy1lbrI4k6YlzeXR4m4SBdLGyiBPhX" \
             --set port.baseUrl="https://api.port.io" \
